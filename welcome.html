@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldForms — Get Started</title>
+<style>
+:root{--navy:#0a2342;--accent:#ff6b1a;--paper:#f4f1ea;--ink:#13202e;--muted:#6f7d8c;--line:#d9d2c4;--card:#fffdf8;}
+*{box-sizing:border-box;}body{margin:0;font-family:"Helvetica Neue",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;}
+.stripe{height:6px;background:linear-gradient(90deg,var(--accent) 0 33%,#1d4e89 33% 66%,var(--navy) 66% 100%);}
+.wrap{max-width:480px;margin:0 auto;padding:34px 22px 60px;text-align:center;}
+.mark{margin:0 auto 16px;display:block;}
+h1{font-size:40px;margin:0;color:var(--navy);letter-spacing:-1px;}
+h1 .ff{color:var(--accent);}
+.tag{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#1d4e89;font-weight:700;margin-top:4px;}
+.desc{font-size:16px;color:#3d4a58;margin:20px auto 28px;}
+.open-btn{display:block;width:100%;background:var(--accent);color:#fff;border:none;border-radius:13px;padding:17px;font-size:17px;font-weight:800;text-decoration:none;margin-bottom:26px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:left;margin-bottom:16px;}
+.card h2{margin:0 0 12px;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:var(--navy);}
+ol{margin:0;padding-left:22px;font-size:15px;line-height:1.8;}
+ol b{color:var(--navy);}
+.ic{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1.5px solid #1d4e89;border-radius:5px;vertical-align:middle;margin:0 2px;}
+.note{font-size:13px;color:var(--muted);margin-top:8px;}
+.foot{font-size:12px;color:var(--muted);margin-top:24px;}
+.tabs{display:flex;gap:8px;margin-bottom:14px;}
+.tabs button{flex:1;padding:10px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:13px;color:#56636f;cursor:pointer;}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+.steps{display:none;}.steps.on{display:block;}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<div class="wrap">
+  <svg class="mark" width="84" height="84" viewBox="0 0 58 58" aria-hidden="true">
+    <rect x="3" y="3" width="52" height="52" rx="13" fill="#0a2342"/>
+    <rect x="15" y="14" width="28" height="6" rx="3" fill="#ff6b1a"/>
+    <rect x="15" y="26" width="28" height="4" rx="2" fill="#ffffff" opacity="0.9"/>
+    <rect x="15" y="35" width="19" height="4" rx="2" fill="#ffffff" opacity="0.9"/>
+    <path d="M15 45 L19 49 L28 40" fill="none" stroke="#ff6b1a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <h1><span class="ff">Field</span>Forms</h1>
+  <div class="tag">SHIMIZU North America</div>
+  <p class="desc">Digital pressure-test inspection forms. Fill them out on any device, capture photos and signatures, and generate the official ATC-11 PDF.</p>
+
+  <a class="open-btn" id="openApp" href="#">Open FieldForms →</a>
+
+  <div class="card">
+    <h2>Add it to your home screen</h2>
+    <div class="tabs">
+      <button id="tIos" class="on" onclick="pick('ios')">iPhone / iPad</button>
+      <button id="tAnd" onclick="pick('and')">Android</button>
+    </div>
+    <div class="steps on" id="sIos">
+      <ol>
+        <li>Tap <b>Open FieldForms</b> above (opens in Safari).</li>
+        <li>Tap the <b>Share</b> button <span class="ic">⬆</span>.</li>
+        <li>Choose <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+        <li>Launch it from the new icon — it runs full-screen like an app.</li>
+      </ol>
+    </div>
+    <div class="steps" id="sAnd">
+      <ol>
+        <li>Tap <b>Open FieldForms</b> above (opens in Chrome).</li>
+        <li>Tap the <b>⋮</b> menu, then <b>Add to Home screen</b> / <b>Install app</b>.</li>
+        <li>Confirm <b>Add</b> / <b>Install</b>.</li>
+        <li>Launch it from the new icon — it runs full-screen like an app.</li>
+      </ol>
+    </div>
+    <div class="note">No app store needed. It installs straight from the web.</div>
+  </div>
+
+  <div class="foot">FieldForms · ATC-11 Pipe Pressure &amp; Leakage Function Test</div>
+</div>
+<script>
+/* APP_URL is filled in below — set it to your live app address */
+var APP_URL = "https://duaneenns-arch.github.io/fieldforms-offline-test/";
+document.getElementById('openApp').href = APP_URL;
+function pick(p){
+  document.getElementById('tIos').classList.toggle('on',p==='ios');
+  document.getElementById('tAnd').classList.toggle('on',p==='and');
+  document.getElementById('sIos').classList.toggle('on',p==='ios');
+  document.getElementById('sAnd').classList.toggle('on',p==='and');
+}
+/* auto-pick Android tab if on Android */
+if(/android/i.test(navigator.userAgent)) pick('and');
+</script>
+</body>
+</html>
