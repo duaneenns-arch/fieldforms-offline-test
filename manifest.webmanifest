@@ -1,0 +1,14 @@
+{
+  "name": "FieldForms",
+  "short_name": "FieldForms",
+  "description": "SHIMIZU North America field inspection forms",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#0a2342",
+  "theme_color": "#0a2342",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

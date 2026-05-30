@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FieldForms — SHIMIZU North America</title>
+<meta name="theme-color" content="#0a2342">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FieldForms">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --navy:#0a2342; --steel:#1d4e89; --ink:#13202e; --paper:#f4f1ea;
+  --accent:#ff6b1a; --line:#d9d2c4; --ok:#1f7a4d; --warn:#b07d12; --bad:#b23b2e;
+  --card:#fffdf8; --muted:#6f7d8c;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{font-family:"Helvetica Neue",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;}
+.hidden{display:none !important;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+.stripe{height:6px;background:linear-gradient(90deg,var(--accent) 0 33%,var(--steel) 33% 66%,var(--navy) 66% 100%);}
+
+/* ---- top bar ---- */
+.topbar{background:var(--navy);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;}
+.topbar .logo{font-size:22px;font-weight:800;letter-spacing:.5px;}
+.topbar .logo small{font-size:9px;font-weight:600;letter-spacing:2px;color:#9fb6d4;display:block;margin-top:-3px;}
+.topbar .right{display:flex;align-items:center;gap:12px;font-size:13px;}
+.topbar .uemail{color:#bcd0e8;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn{border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:14px;transition:transform .08s,opacity .15s;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);}
+.btn-sec{background:#e9e3d6;color:var(--ink);border:1px solid var(--line);}
+.btn-sm{padding:7px 12px;font-size:12px;border-radius:8px;}
+
+/* ---- landing ---- */
+.landing{min-height:calc(100vh - 6px);display:flex;flex-direction:column;}
+.land-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;
+  background:
+   radial-gradient(circle at 20% 20%,rgba(29,78,137,.07),transparent 40%),
+   radial-gradient(circle at 80% 70%,rgba(255,107,26,.06),transparent 40%);}
+.land-mark{font-size:64px;font-weight:800;letter-spacing:-1px;color:var(--navy);line-height:1;}
+.land-mark .ff{color:var(--accent);}
+.land-tag{font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--steel);margin-top:8px;font-weight:700;}
+.land-desc{max-width:520px;margin:26px auto 34px;font-size:17px;color:#3d4a58;}
+.land-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.land-actions .btn{padding:15px 26px;font-size:15px;}
+.land-foot{padding:16px;text-align:center;font-size:12px;color:var(--muted);border-top:1px solid var(--line);}
+.feat{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:46px;max-width:760px;}
+.feat .f{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;text-align:left;}
+.feat .f b{display:block;color:var(--navy);font-size:15px;margin-bottom:4px;}
+.feat .f span{font-size:13px;color:#56636f;}
+
+/* ---- auth modal ---- */
+.modal-back{position:fixed;inset:0;background:rgba(10,22,34,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px;}
+.modal{background:var(--card);border-radius:18px;width:100%;max-width:400px;padding:28px;box-shadow:0 24px 60px rgba(0,0,0,.35);}
+.modal h2{margin:0 0 4px;color:var(--navy);font-size:22px;}
+.modal p.sub{margin:0 0 20px;color:var(--muted);font-size:14px;}
+.modal label{display:block;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#7c8a98;margin:14px 0 6px;}
+.modal input{width:100%;padding:13px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fff;}
+.modal input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,26,.15);}
+.modal .err{color:var(--bad);font-size:13px;margin-top:10px;min-height:16px;}
+.modal .row-btn{margin-top:18px;display:flex;flex-direction:column;gap:10px;}
+.modal .or{text-align:center;color:var(--muted);font-size:12px;margin:14px 0;position:relative;}
+.modal .or:before,.modal .or:after{content:"";position:absolute;top:50%;width:38%;height:1px;background:var(--line);}
+.modal .or:before{left:0;}.modal .or:after{right:0;}
+.modal .switch{text-align:center;margin-top:16px;font-size:13px;color:var(--muted);}
+.modal .switch a{color:var(--steel);font-weight:700;cursor:pointer;}
+.modal .x{position:absolute;}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid var(--line);color:#3c4043;border-radius:10px;padding:12px;font-weight:700;font-size:14px;width:100%;}
+.gbtn svg{width:18px;height:18px;}
+.banner{background:#fff7ed;border:1px solid #ffd9b3;color:#8a4b12;font-size:12.5px;padding:10px 14px;border-radius:10px;margin-bottom:16px;line-height:1.45;}
+
+/* ---- dashboard ---- */
+.wrap{max-width:1000px;margin:0 auto;padding:24px 18px 100px;}
+.dash-head{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;}
+.dash-head h1{margin:0;font-size:26px;color:var(--navy);}
+.dash-head p{margin:2px 0 0;color:var(--muted);font-size:14px;}
+.tabs{display:flex;gap:6px;border-bottom:2px solid var(--line);margin:22px 0 18px;flex-wrap:wrap;}
+.tabs button{background:none;border:none;padding:11px 14px;font-size:14px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;}
+.tabs button.on{color:var(--navy);border-bottom-color:var(--accent);}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.fcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;}
+.fcard .pn{font-size:17px;font-weight:800;color:var(--navy);}
+.fcard .meta{font-size:13px;color:#56636f;display:flex;flex-direction:column;gap:2px;}
+.fcard .meta span b{color:var(--ink);font-weight:600;}
+.fcard .tagrow{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
+.status{font-size:11px;font-weight:800;letter-spacing:.5px;padding:4px 10px;border-radius:20px;text-transform:uppercase;}
+.status.draft{background:#fff1d6;color:var(--warn);}
+.status.completed{background:#dff0e6;color:var(--ok);}
+.status.pdf_generated{background:#dde7f4;color:var(--steel);}
+.fcard .acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .big{font-size:46px;margin-bottom:10px;}
+.newcard{display:flex;align-items:center;justify-content:center;border:2px dashed var(--line);border-radius:14px;padding:30px;color:var(--steel);font-weight:700;font-size:16px;background:rgba(255,255,255,.4);cursor:pointer;}
+.newcard:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ---- form view ---- */
+.form-top{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+.back-link{color:var(--steel);font-weight:700;font-size:14px;cursor:pointer;background:none;border:none;padding:6px 0;}
+.section{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:16px;overflow:hidden;}
+.section h2{margin:0;background:#efe9dc;padding:12px 16px;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy);border-bottom:1px solid var(--line);}
+.section .body{padding:16px;}
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#7c8a98;margin-bottom:6px;}
+.field label .req{color:var(--bad);}
+.field input,.field select,.field textarea{width:100%;padding:13px;border:1.5px solid var(--line);border-radius:10px;font-size:16px;background:#fff;}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,26,.13);}
+.field input.invalid{border-color:var(--bad);background:#fdf0ee;}
+.field .computed{background:#eef3f8;font-weight:700;color:var(--navy);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:560px){.row2{grid-template-columns:1fr;}}
+.subhead{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--steel);margin:4px 0 12px;padding-bottom:6px;border-bottom:1px dashed var(--line);}
+.seg{display:flex;gap:8px;flex-wrap:wrap;}
+.seg button{flex:1;min-width:90px;padding:12px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:13px;color:#56636f;}
+.seg button.on.ok{background:var(--ok);color:#fff;border-color:var(--ok);}
+.seg button.on.warn{background:var(--warn);color:#fff;border-color:var(--warn);}
+.seg button.on.bad{background:var(--bad);color:#fff;border-color:var(--bad);}
+.yn{display:flex;gap:8px;}
+.yn button{flex:1;padding:12px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;color:#56636f;}
+.yn button.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+.photo-box{border:2px dashed var(--line);border-radius:12px;padding:16px;text-align:center;background:#fff;}
+.photo-box img{max-width:100%;max-height:200px;border-radius:8px;margin-bottom:8px;}
+.photo-btn{background:var(--steel);color:#fff;border:none;border-radius:10px;padding:12px 18px;font-weight:700;font-size:14px;}
+.photo-btn.sec{background:#e9e3d6;color:var(--ink);}
+.photo-hint{font-size:12px;color:var(--muted);margin-top:8px;}
+input[type=file]{display:none;}
+.sig-wrap{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;}
+canvas.sig{width:100%;height:120px;display:block;touch-action:none;}
+.sig-bar{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#f6f2ea;font-size:12px;color:var(--muted);}
+.sig-bar .clear-link{color:var(--bad);font-weight:700;cursor:pointer;}
+.witness{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;background:#fffdf8;}
+.wtitle{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:10px;letter-spacing:.5px;}
+
+/* ---- footer action bar ---- */
+.footer-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:12px 18px;display:flex;gap:10px;z-index:30;box-shadow:0 -4px 16px rgba(0,0,0,.06);}
+.footer-bar .max{max-width:1000px;margin:0 auto;display:flex;gap:10px;width:100%;flex-wrap:wrap;}
+.footer-bar .btn{flex:1 1 auto;min-width:110px;padding:15px;}
+.btn-complete{background:var(--ok);color:#fff;}
+.edit-warning{background:#fff7ed;border:1px solid #ffd9b3;color:#8a4b12;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:14px;line-height:1.45;display:flex;gap:10px;align-items:flex-start;}
+.edit-warning b{color:#b23b2e;}
+.edit-history{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:16px;overflow:hidden;}
+.edit-history h2{margin:0;background:#efe9dc;padding:12px 16px;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy);border-bottom:1px solid var(--line);}
+.edit-history .body{padding:8px 16px;}
+.edit-history ul{list-style:none;margin:0;padding:0;}
+.edit-history li{padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px;color:#44505c;}
+.edit-history li:last-child{border-bottom:none;}
+.edit-history li b{color:var(--navy);}
+
+/* ---- toast + spinner ---- */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 22px;border-radius:30px;font-weight:700;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:80;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.toast.show{opacity:1;}
+.spinner{position:fixed;inset:0;background:rgba(244,241,234,.7);display:flex;align-items:center;justify-content:center;z-index:90;}
+.spinner .ring{width:42px;height:42px;border:4px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.modesign{position:fixed;bottom:8px;right:10px;font-size:10px;color:var(--muted);z-index:20;letter-spacing:.5px;}
+.net-badge{font-size:11px;font-weight:800;letter-spacing:.4px;padding:5px 10px;border-radius:20px;white-space:nowrap;}
+.net-badge.online{background:#dff0e6;color:#1f7a4d;}
+.net-badge.offline{background:#fde9d6;color:#b07d12;}
+.net-badge.pending{background:#dde7f4;color:#1d4e89;}
+.net-badge.failed{background:#fbe2de;color:#b23b2e;}
+.sync-badge{font-size:10px;font-weight:800;letter-spacing:.4px;padding:3px 9px;border-radius:20px;text-transform:uppercase;}
+.sync-badge.sync-ok{background:#dff0e6;color:#1f7a4d;}
+.sync-badge.sync-pending{background:#dde7f4;color:#1d4e89;}
+.sync-badge.sync-fail{background:#fbe2de;color:#b23b2e;}
+.sync-badge.sync-local{background:#ece6da;color:#6f7d8c;}
+/* install prompt */
+.install-bar{position:fixed;left:12px;right:12px;bottom:12px;background:var(--navy);color:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:70;box-shadow:0 10px 30px rgba(0,0,0,.35);}
+.install-bar svg{flex:none;}
+.install-bar .txt{flex:1;font-size:13.5px;line-height:1.35;}
+.install-bar .txt b{display:block;font-size:14px;margin-bottom:1px;}
+.install-bar button{flex:none;border:none;border-radius:9px;padding:9px 14px;font-weight:700;font-size:13px;}
+.install-bar .go{background:var(--accent);color:#fff;}
+.install-bar .x{background:transparent;color:#9fb6d4;padding:9px 8px;}
+.install-sheet{position:fixed;inset:0;background:rgba(10,22,34,.6);display:flex;align-items:flex-end;justify-content:center;z-index:75;padding:0;}
+.install-sheet .card{background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:520px;padding:22px 20px 30px;}
+.install-sheet h3{margin:0 0 4px;color:var(--navy);font-size:19px;}
+.install-sheet p.sub{margin:0 0 16px;color:var(--muted);font-size:13.5px;}
+.install-sheet ol{margin:0;padding-left:20px;color:var(--ink);font-size:15px;line-height:1.7;}
+.install-sheet ol b{color:var(--navy);}
+.install-sheet .close{margin-top:18px;width:100%;background:var(--navy);color:#fff;border:none;border-radius:11px;padding:13px;font-weight:700;font-size:15px;}
+.install-sheet .ic{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1.5px solid var(--steel);border-radius:5px;vertical-align:middle;margin:0 2px;}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+
+<!-- ============ LANDING ============ -->
+<div id="landing" class="landing">
+  <div class="land-hero">
+    <svg width="76" height="76" viewBox="0 0 58 58" aria-hidden="true" style="margin-bottom:14px;">
+      <rect x="3" y="3" width="52" height="52" rx="13" fill="#0a2342"/>
+      <rect x="15" y="14" width="28" height="6" rx="3" fill="#ff6b1a"/>
+      <rect x="15" y="26" width="28" height="4" rx="2" fill="#ffffff" opacity="0.9"/>
+      <rect x="15" y="35" width="19" height="4" rx="2" fill="#ffffff" opacity="0.9"/>
+      <path d="M15 45 L19 49 L28 40" fill="none" stroke="#ff6b1a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="land-mark"><span class="ff">Field</span>Forms</div>
+    <div class="land-tag">SHIMIZU North America</div>
+    <p class="land-desc">Digital jobsite inspection forms. Fill them out on any device, capture photos and signatures, generate the official ATC-11 PDF, and pick up where you left off anywhere.</p>
+    <div class="land-actions">
+      <button class="btn btn-primary" onclick="signInTapped()">Sign In</button>
+      <button class="btn btn-sec" onclick="startDemo()">Start Demo Form</button>
+    </div>
+    <div class="feat">
+      <div class="f"><b>Works everywhere</b><span>iPhone, iPad, and computer — your forms sync automatically.</span></div>
+      <div class="f"><b>Photos & signatures</b><span>Capture gauge readings and sign on-screen in the field.</span></div>
+      <div class="f"><b>Official PDF</b><span>One tap generates the ATC-11 form, ready to share.</span></div>
+    </div>
+  </div>
+  <div class="land-foot">FieldForms · ATC-11 Pipe Pressure &amp; Leakage Function Test · Demo build</div>
+</div>
+
+<!-- ============ AUTH MODAL ============ -->
+<div id="authModal" class="modal-back hidden">
+  <div class="modal">
+    <h2 id="authTitle">Sign In</h2>
+    <p class="sub" id="authSub">Welcome back. Sign in to your forms.</p>
+    <div id="authBanner" class="banner hidden"></div>
+    <label>Email</label>
+    <input type="email" id="authEmail" placeholder="you@company.com" autocomplete="email">
+    <label>Password</label>
+    <input type="password" id="authPass" placeholder="••••••••" autocomplete="current-password">
+    <div class="err" id="authErr"></div>
+    <div class="row-btn">
+      <button class="btn btn-primary" id="authSubmit" onclick="submitAuth()">Sign In</button>
+    </div>
+    <div class="or">or</div>
+    <button class="gbtn" onclick="googleAuth()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.3 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-3.9 6.8-9.7 6.8-17.4z"/><path fill="#FBBC05" d="M10.5 28.4c-.5-1.5-.8-3.1-.8-4.9s.3-3.4.8-4.9l-7.9-6.2C.9 15.6 0 19.7 0 24s.9 8.4 2.6 11.6l7.9-7.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.3-5.7c-2 1.4-4.7 2.3-8.6 2.3-6.3 0-11.7-4.1-13.5-9.9l-7.9 7.2C6.5 42.6 14.6 48 24 48z"/></svg>
+      Continue with Google
+    </button>
+    <div class="switch" id="authSwitch">New here? <a onclick="toggleAuthMode()">Create an account</a></div>
+    <div class="switch"><a onclick="closeAuth()" style="color:var(--muted)">Cancel</a></div>
+  </div>
+</div>
+
+<!-- ============ APP (dashboard + form) ============ -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="logo" onclick="showDash()" style="cursor:pointer;display:flex;align-items:center;gap:10px;">
+      <svg width="30" height="30" viewBox="0 0 58 58" aria-hidden="true" style="flex:none;">
+        <rect x="3" y="3" width="52" height="52" rx="13" fill="#ff6b1a"/>
+        <rect x="15" y="14" width="28" height="6" rx="3" fill="#ffffff"/>
+        <rect x="15" y="26" width="28" height="4" rx="2" fill="#ffffff" opacity="0.85"/>
+        <rect x="15" y="35" width="19" height="4" rx="2" fill="#ffffff" opacity="0.85"/>
+        <path d="M15 45 L19 49 L28 40" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>FieldForms<small>SHIMIZU NORTH AMERICA</small></span>
+    </div>
+    <div class="right">
+      <span class="net-badge" id="netBadge"></span>
+      <span class="uemail" id="topEmail"></span>
+      <button class="btn btn-ghost btn-sm" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashView" class="wrap">
+    <div class="dash-head">
+      <div>
+        <h1>Your Forms</h1>
+        <p id="dashSubline">Create, continue, and review inspection forms.</p>
+      </div>
+      <button class="btn btn-primary" onclick="newForm()">+ Create New Form</button>
+    </div>
+    <div class="tabs" id="dashTabs">
+      <button class="on" data-tab="all" onclick="setTab('all')">All</button>
+      <button data-tab="draft" onclick="setTab('draft')">Drafts</button>
+      <button data-tab="completed" onclick="setTab('completed')">Completed</button>
+      <button data-tab="pdf_generated" onclick="setTab('pdf_generated')">PDF Generated</button>
+    </div>
+    <div id="formList"></div>
+  </div>
+
+  <!-- FORM -->
+  <div id="formView" class="wrap hidden">
+    <div class="form-top">
+      <button class="btn btn-sec btn-sm" onclick="confirmLeave()">‹ Back to Dashboard</button>
+    </div>
+    <h1 id="formHeading" style="color:var(--navy);margin:0 0 16px;font-size:24px;">New Pressure Test</h1>
+
+    <div id="editWarning" class="edit-warning hidden">
+      <span>⚠️</span>
+      <div><b>You are editing a finished form.</b> <span id="editWarningStatus"></span> Any changes you save will be recorded in the edit history below with the date and time.</div>
+    </div>
+
+    <div id="editHistory" class="edit-history hidden">
+      <h2>Edit History</h2>
+      <div class="body"><ul id="editHistoryList"></ul></div>
+    </div>
+
+    <div class="section">
+      <h2>Project Identification</h2>
+      <div class="body">
+        <div class="field"><label>Project Name <span class="req">*</span></label><input type="text" id="projectName" oninput="clearInvalid(this)"></div>
+        <div class="field"><label>Subcontractor <span class="req">*</span></label><input type="text" id="subcontractor" oninput="clearInvalid(this)"></div>
+        <div class="field"><label>System (Service)</label><input type="text" id="system"></div>
+        <div class="field"><label>Location <span class="req">*</span></label><input type="text" id="location" oninput="clearInvalid(this)"></div>
+        <div class="field"><label>Drawing Ref</label><input type="text" id="drawingRef"></div>
+        <div class="field"><label>Pipe Material</label><input type="text" id="pipeMaterial"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Specification</h2>
+      <div class="body">
+        <div class="row2">
+          <div class="field"><label>Working Pressure (psi)</label><input type="number" inputmode="decimal" id="workingPressure"></div>
+          <div class="field"><label>Test Pressure (psi)</label><input type="number" inputmode="decimal" id="testPressure"></div>
+        </div>
+        <div class="field"><label>Duration / Test Time (hours)</label><input type="number" inputmode="decimal" id="duration"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Test Readings</h2>
+      <div class="body">
+        <div class="subhead">Start</div>
+        <div class="row2">
+          <div class="field"><label>Date</label><input type="date" id="startDate"></div>
+          <div class="field"><label>Time</label><input type="time" id="startTime"></div>
+        </div>
+        <div class="field"><label>Start Pressure Reading (psi)</label><input type="number" inputmode="decimal" id="startReading" oninput="calcDrop()"></div>
+        <div class="subhead">Complete</div>
+        <div class="row2">
+          <div class="field"><label>Date</label><input type="date" id="endDate"></div>
+          <div class="field"><label>Time</label><input type="time" id="endTime"></div>
+        </div>
+        <div class="field"><label>End Pressure Reading (psi)</label><input type="number" inputmode="decimal" id="endReading" oninput="calcDrop()"></div>
+        <div class="field"><label>Pressure Drop (psi)</label><input type="text" id="pressureDrop" class="computed" readonly placeholder="auto-calculated"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Photo Evidence</h2>
+      <div class="body">
+        <div class="field"><label>Start Photo</label>
+          <div class="photo-box"><div id="startPhotoPreview"></div>
+            <button class="photo-btn" onclick="document.getElementById('startPhotoInput').click()">📷 Capture / Choose</button>
+            <input type="file" id="startPhotoInput" accept="image/*" capture="environment" onchange="loadPhoto(this,'start')">
+            <div class="photo-hint">Gauge reading at start of test</div>
+          </div>
+        </div>
+        <div class="field"><label>End Photo</label>
+          <div class="photo-box"><div id="endPhotoPreview"></div>
+            <button class="photo-btn" onclick="document.getElementById('endPhotoInput').click()">📷 Capture / Choose</button>
+            <input type="file" id="endPhotoInput" accept="image/*" capture="environment" onchange="loadPhoto(this,'end')">
+            <div class="photo-hint">Gauge reading at completion</div>
+          </div>
+        </div>
+        <div class="field"><label>Additional Photos (optional)</label>
+          <div class="photo-box"><div id="extraPhotoPreview" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
+            <button class="photo-btn sec" onclick="document.getElementById('extraPhotoInput').click()">+ Add Photo</button>
+            <input type="file" id="extraPhotoInput" accept="image/*" capture="environment" multiple onchange="loadExtra(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Inspection Result</h2>
+      <div class="body">
+        <div class="field"><label>Result</label>
+          <div class="seg" id="resultSeg">
+            <button data-val="Approved" class="ok" onclick="pickSeg(this,'result')">Approved</button>
+            <button data-val="Approved with Comment" class="warn" onclick="pickSeg(this,'result')">Approved w/ Comment</button>
+            <button data-val="Not Approved" class="bad" onclick="pickSeg(this,'result')">Not Approved</button>
+          </div>
+        </div>
+        <div class="field"><label>Re-Inspection Required</label>
+          <div class="yn" id="reinspectYN"><button data-val="Yes" onclick="pickYN(this,'reinspect')">Yes</button><button data-val="No" onclick="pickYN(this,'reinspect')">No</button></div>
+        </div>
+        <div class="field"><label>Acceptable for Next Work</label>
+          <div class="yn" id="nextworkYN"><button data-val="Yes" onclick="pickYN(this,'nextwork')">Yes</button><button data-val="No" onclick="pickYN(this,'nextwork')">No</button></div>
+        </div>
+        <div class="field"><label>Remark / Non-Conformance</label><textarea id="remarks" rows="3"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Signatures</h2>
+      <div class="body">
+        <div class="witness"><div class="wtitle">Subcontractor Witness</div>
+          <div class="field"><label>Name</label><input type="text" id="subName"></div>
+          <div class="field"><label>Company</label><input type="text" id="subCompany"></div>
+          <div class="field"><label>Date</label><input type="date" id="subDate"></div>
+          <label style="font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#7c8a98;margin-bottom:6px;display:block;">Signature</label>
+          <div class="sig-wrap"><canvas class="sig" data-pad="subSig"></canvas><div class="sig-bar"><span>Sign above</span><span class="clear-link" data-clear="subSig">Clear</span></div></div>
+        </div>
+        <div class="witness"><div class="wtitle">Main Contractor Witness</div>
+          <div class="field"><label>Name</label><input type="text" id="mainName"></div>
+          <div class="field"><label>Company</label><input type="text" id="mainCompany" value="SHIMIZU North America"></div>
+          <div class="field"><label>Date</label><input type="date" id="mainDate"></div>
+          <label style="font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#7c8a98;margin-bottom:6px;display:block;">Signature</label>
+          <div class="sig-wrap"><canvas class="sig" data-pad="mainSig"></canvas><div class="sig-bar"><span>Sign above</span><span class="clear-link" data-clear="mainSig">Clear</span></div></div>
+        </div>
+        <div class="witness"><div class="wtitle">Client / Client's Rep Witness</div>
+          <div class="field"><label>Name</label><input type="text" id="clientName"></div>
+          <div class="field"><label>Company</label><input type="text" id="clientCompany"></div>
+          <div class="field"><label>Date</label><input type="date" id="clientDate"></div>
+          <label style="font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#7c8a98;margin-bottom:6px;display:block;">Signature</label>
+          <div class="sig-wrap"><canvas class="sig" data-pad="clientSig"></canvas><div class="sig-bar"><span>Sign above</span><span class="clear-link" data-clear="clientSig">Clear</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-bar hidden" id="footerBar">
+  <div class="max">
+    <button class="btn btn-sec" onclick="saveDraft()">Save Draft</button>
+    <button class="btn btn-complete" onclick="markComplete()">Mark Complete</button>
+    <button class="btn btn-primary" onclick="completeAndPDF()">Generate PDF</button>
+    <button class="btn btn-sec" onclick="shareCurrent()" title="Share PDF">Share</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="spinner hidden" id="spinner"><div class="ring"></div></div>
+<div class="modesign" id="modeSign"></div>
+
+<div class="install-bar hidden" id="installBar">
+  <svg width="34" height="34" viewBox="0 0 58 58" aria-hidden="true">
+    <rect x="3" y="3" width="52" height="52" rx="13" fill="#ff6b1a"/>
+    <rect x="15" y="14" width="28" height="6" rx="3" fill="#fff"/>
+    <rect x="15" y="26" width="28" height="4" rx="2" fill="#fff" opacity="0.85"/>
+    <rect x="15" y="35" width="19" height="4" rx="2" fill="#fff" opacity="0.85"/>
+    <path d="M15 45 L19 49 L28 40" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div class="txt"><b>Add FieldForms to your device</b>Get a home-screen icon that opens like an app.</div>
+  <button class="go" onclick="showInstall()">How</button>
+  <button class="x" onclick="dismissInstall()" aria-label="Dismiss">✕</button>
+</div>
+
+<div class="install-sheet hidden" id="installSheet">
+  <div class="card">
+    <h3>Add to Home Screen</h3>
+    <p class="sub" id="installSubtitle"></p>
+    <ol id="installSteps"></ol>
+    <button class="close" onclick="hideInstall()">Got it</button>
+  </div>
+</div>
+
+<!-- Firebase SDKs (loaded as modules). If config is blank, app runs in LOCAL mode. -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         signOut as fbSignOut, GoogleAuthProvider, signInWithPopup, signInAnonymously }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc,
+         query, where, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref as sRef, uploadString, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+/* ====================================================================
+   FIREBASE CONFIG  —  PASTE YOUR KEYS BETWEEN THE QUOTES BELOW.
+   Get them from: Firebase Console → Project Settings → "Your apps" → Web app.
+   Until these are filled in, FieldForms runs in LOCAL mode (this device only).
+   ==================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBQqltWaKhVSTmUvnAa1-CZSMzGvQ-xOnA",
+  authDomain: "fieldforms-4213e.firebaseapp.com",
+  projectId: "fieldforms-4213e",
+  storageBucket: "fieldforms-4213e.firebasestorage.app",
+  messagingSenderId: "503474445648",
+  appId: "1:503474445648:web:de9db922f4c6b7797a6055"
+};
+
+const LIVE = !!firebaseConfig.apiKey;
+let auth=null, db=null, storage=null;
+if(LIVE){
+  const fbApp = initializeApp(firebaseConfig);
+  auth = getAuth(fbApp);
+  db = getFirestore(fbApp);
+  storage = getStorage(fbApp);
+}
+
+// expose a small bridge so the non-module code below can call Firebase
+window.FB = {
+  LIVE, auth, db, storage,
+  onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  fbSignOut, GoogleAuthProvider, signInWithPopup, signInAnonymously,
+  collection, doc, setDoc, getDoc, getDocs, deleteDoc, query, where, orderBy, serverTimestamp,
+  sRef, uploadString, getDownloadURL
+};
+window.dispatchEvent(new Event('fb-ready'));
+</script>
+
+<script>
+/* =======================================================================
+   FieldForms app logic. Works in two modes:
+   - LIVE  : real Firebase (auth + Firestore + Storage), multi-device sync
+   - LOCAL : no config yet -> in-memory + localStorage, single device
+   ======================================================================= */
+
+let FB=null, MODE='local', currentUser=null, currentFormId=null, dirty=false, currentTab='all';
+
+/* DEMO_AUTH: when true, the Sign In button enters the app immediately with no
+   password. Flip to false later to require real authentication — the existing
+   email/password + Google modal and Firebase flow take over automatically,
+   no other code changes needed. */
+const DEMO_AUTH = true;
+
+/* In demo mode with Firebase configured, all devices share one workspace id so
+   the same inspections appear on iPhone, iPad, and laptop. With real auth later,
+   each user's own uid replaces this automatically. */
+const DEMO_WORKSPACE = 'demo-shared';
+
+async function signInTapped(){
+  if(!DEMO_AUTH){ openAuth('signin'); return; } // real auth path (DEMO_AUTH=false)
+  if(MODE==='live'){
+    // anonymous Firebase session, but read/write the shared demo workspace
+    spin(true);
+    try{
+      await FB.signInAnonymously(FB.auth);
+      currentUser={uid:DEMO_WORKSPACE,email:'',demo:true};
+      enterApp();
+    }catch(e){
+      console.error(e);
+      toast('Could not start demo session — check Firebase Anonymous sign-in is enabled');
+    }finally{ spin(false); }
+  } else {
+    currentUser={uid:'demo-user',email:'',demo:true};
+    localStorage.setItem('ff_user',JSON.stringify(currentUser));
+    enterApp();
+  }
+}
+
+const state={ result:"",reinspect:"",nextwork:"",startPhoto:null,endPhoto:null,extras:[],status:"draft",demo:false,formType:"atc11_pressure_test",createdAt:null,completedAt:null,editHistory:[],cloudId:null };
+
+/* ============================================================
+   FORM TYPE REGISTRY (future-ready)
+   ATC-11 is the only ACTIVE type today. Adding a new form type
+   later = add an entry here with active:true and build its form
+   section; storage, dashboard, drafts, and PDF list already key
+   off formType, so no structural rebuild is needed.
+   ============================================================ */
+const FORM_TYPES = {
+  atc11_pressure_test: { label:'ATC-11 Pressure Test', active:true },
+  // --- planned modules (inactive until built) ---
+  leakage_test:        { label:'Leakage Test', active:false },
+  underground_insp:    { label:'Underground Inspection', active:false },
+  above_ceiling_insp:  { label:'Above Ceiling Inspection', active:false },
+  ceiling_insp:        { label:'Ceiling Inspection', active:false },
+  equipment_startup:   { label:'Equipment Startup', active:false },
+  daily_report:        { label:'Daily Report', active:false },
+  safety_observation:  { label:'Safety Observation', active:false },
+  punch_list:          { label:'Punch List', active:false },
+  deficiency_tracking: { label:'Deficiency Tracking', active:false },
+  commissioning:       { label:'Commissioning Form', active:false }
+};
+
+/* ---------- boot ---------- */
+function boot(){
+  FB=window.FB;
+  MODE = FB && FB.LIVE ? 'live' : 'local';
+  document.getElementById('modeSign').textContent = MODE==='live' ? 'Firebase: connected' : 'Local mode (add Firebase keys to sync)';
+  if(MODE==='live'){
+    FB.onAuthStateChanged(FB.auth,u=>{
+      if(u){
+        if(u.isAnonymous && DEMO_AUTH){
+          // demo session: all devices share one workspace
+          currentUser={uid:DEMO_WORKSPACE,email:'',demo:true};
+        } else {
+          currentUser={uid:u.uid,email:u.email};
+        }
+        enterApp();
+      } else { currentUser=null; showLanding(); }
+    });
+  } else {
+    const saved=localStorage.getItem('ff_user');
+    if(saved){ currentUser=JSON.parse(saved); enterApp(); }
+  }
+}
+if(window.FB){ boot(); } else { window.addEventListener('fb-ready',boot); }
+
+/* ---------- PWA install helper ---------- */
+let deferredInstall=null;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+const ua=navigator.userAgent||'';
+const isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+const isAndroid = /android/i.test(ua);
+
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredInstall=e; });
+
+function maybeShowInstallBar(){
+  if(isStandalone) return;                       // already installed — never nag
+  if(sessionStorage.getItem('ff_install_dismissed')) return;
+  // show after a short delay so it isn't jarring on first paint
+  setTimeout(()=>{ document.getElementById('installBar').classList.remove('hidden'); }, 1500);
+}
+function dismissInstall(){ document.getElementById('installBar').classList.add('hidden'); sessionStorage.setItem('ff_install_dismissed','1'); }
+async function showInstall(){
+  document.getElementById('installBar').classList.add('hidden');
+  // Android/Chrome can install natively
+  if(deferredInstall){
+    deferredInstall.prompt();
+    try{ await deferredInstall.userChoice; }catch(e){}
+    deferredInstall=null;
+    return;
+  }
+  // Otherwise show platform-correct manual steps
+  const sub=document.getElementById('installSubtitle');
+  const steps=document.getElementById('installSteps');
+  if(isIOS){
+    sub.textContent='In Safari, this takes about 10 seconds:';
+    steps.innerHTML='<li>Tap the <b>Share</b> button <span class="ic">⬆</span> at the bottom (or top) of Safari.</li>'
+      +'<li>Scroll down and tap <b>Add to Home Screen</b>.</li>'
+      +'<li>Tap <b>Add</b> in the top corner.</li>'
+      +'<li>FieldForms now opens from your home screen like an app.</li>';
+  } else if(isAndroid){
+    sub.textContent='In Chrome, this takes about 10 seconds:';
+    steps.innerHTML='<li>Tap the <b>⋮</b> menu (top-right of Chrome).</li>'
+      +'<li>Tap <b>Add to Home screen</b> (or <b>Install app</b>).</li>'
+      +'<li>Tap <b>Add</b> / <b>Install</b> to confirm.</li>'
+      +'<li>FieldForms now opens from your home screen like an app.</li>';
+  } else {
+    sub.textContent='On your computer:';
+    steps.innerHTML='<li>Look for an <b>install</b> icon in the address bar (a small screen/⊕ icon).</li>'
+      +'<li>Click it and confirm <b>Install</b>.</li>'
+      +'<li>Or use the browser menu → <b>Install FieldForms</b>.</li>'
+      +'<li>On phones/tablets, open this page and use your browser\u2019s “Add to Home Screen”.</li>';
+  }
+  document.getElementById('installSheet').classList.remove('hidden');
+}
+function hideInstall(){ document.getElementById('installSheet').classList.add('hidden'); }
+maybeShowInstallBar();
+
+/* Real service worker (sw.js) — caches the app shell so FieldForms opens offline
+   after the first online visit. Registered with relative scope so it works at any path. */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(err=>console.warn('SW register failed',err));
+  });
+}
+
+/* ---------- toast / spinner ---------- */
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+function spin(on){document.getElementById('spinner').classList.toggle('hidden',!on);}
+
+/* ---------- view switching ---------- */
+function showLanding(){document.getElementById('landing').classList.remove('hidden');document.getElementById('app').classList.add('hidden');document.getElementById('footerBar').classList.add('hidden');}
+function enterApp(){
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('topEmail').textContent = currentUser.email||(currentUser.demo?'Demo user':'');
+  updateNetBadge();
+  syncPending();   // catch up anything queued from a previous offline session
+  showDash();
+}
+
+/* ---------- network status indicator + listeners ---------- */
+async function updateNetBadge(){
+  const el=document.getElementById('netBadge');
+  if(!el) return;
+  if(MODE!=='live'){ el.className='net-badge offline'; el.textContent='Saved on device only'; return; }
+  if(!nowOnline()){ el.className='net-badge offline'; el.textContent='Offline — saved on device'; return; }
+  // online: reflect whether anything is still pending/failed
+  let pending=0, failed=0;
+  try{
+    const all=await idbAll();
+    pending=all.filter(f=>f.syncStatus==='pending_sync').length;
+    failed=all.filter(f=>f.syncStatus==='sync_failed').length;
+  }catch(e){}
+  if(failed){ el.className='net-badge failed'; el.textContent='Sync failed — action needed'; }
+  else if(pending){ el.className='net-badge pending'; el.textContent='Pending sync ('+pending+')'; }
+  else { el.className='net-badge online'; el.textContent='Online — synced'; }
+}
+window.addEventListener('online', async ()=>{ updateNetBadge(); await syncPending(); updateNetBadge(); });
+window.addEventListener('offline', ()=>{ updateNetBadge(); toast('Offline — changes save on this device'); });
+function showDash(){
+  if(dirty && !confirm('Leave this form? Unsaved changes will be lost.')) return;
+  dirty=false;currentFormId=null;
+  document.getElementById('formView').classList.add('hidden');
+  document.getElementById('footerBar').classList.add('hidden');
+  document.getElementById('dashView').classList.remove('hidden');
+  loadForms();
+}
+function showFormView(){
+  document.getElementById('dashView').classList.add('hidden');
+  document.getElementById('formView').classList.remove('hidden');
+  document.getElementById('footerBar').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+function confirmLeave(){ showDash(); }
+
+/* ---------- AUTH UI ---------- */
+let authMode='signin';
+function openAuth(mode){authMode=mode;renderAuth();document.getElementById('authModal').classList.remove('hidden');}
+function closeAuth(){document.getElementById('authModal').classList.add('hidden');document.getElementById('authErr').textContent='';}
+function toggleAuthMode(){authMode=authMode==='signin'?'signup':'signin';renderAuth();}
+function renderAuth(){
+  const t=document.getElementById('authTitle'),s=document.getElementById('authSub'),b=document.getElementById('authSubmit'),sw=document.getElementById('authSwitch'),banner=document.getElementById('authBanner');
+  if(authMode==='signin'){t.textContent='Sign In';s.textContent='Welcome back. Sign in to your forms.';b.textContent='Sign In';sw.innerHTML='New here? <a onclick="toggleAuthMode()">Create an account</a>';}
+  else{t.textContent='Create Account';s.textContent='Set up your FieldForms login.';b.textContent='Create Account';sw.innerHTML='Already have an account? <a onclick="toggleAuthMode()">Sign in</a>';}
+  if(MODE==='local'){banner.classList.remove('hidden');banner.innerHTML='<b>Local mode.</b> Firebase keys aren\u2019t added yet, so accounts live only on this device and won\u2019t sync. Any email/password works for testing.';}
+  else banner.classList.add('hidden');
+  document.getElementById('authErr').textContent='';
+}
+async function submitAuth(){
+  const email=document.getElementById('authEmail').value.trim();
+  const pass=document.getElementById('authPass').value;
+  const err=document.getElementById('authErr');
+  if(!email||!pass){err.textContent='Enter email and password.';return;}
+  if(MODE==='local'){
+    currentUser={uid:'local_'+btoa(email).replace(/=/g,''),email,demo:false};
+    localStorage.setItem('ff_user',JSON.stringify(currentUser));
+    closeAuth();enterApp();toast('Signed in (local mode)');return;
+  }
+  spin(true);
+  try{
+    if(authMode==='signin') await FB.signInWithEmailAndPassword(FB.auth,email,pass);
+    else await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
+    closeAuth();
+  }catch(e){ err.textContent=friendlyAuthError(e); }
+  finally{ spin(false); }
+}
+async function googleAuth(){
+  if(MODE==='local'){
+    currentUser={uid:'local_google',email:'demo.google@local',demo:false};
+    localStorage.setItem('ff_user',JSON.stringify(currentUser));
+    closeAuth();enterApp();toast('Signed in with Google (local mock)');return;
+  }
+  spin(true);
+  try{ const p=new FB.GoogleAuthProvider(); await FB.signInWithPopup(FB.auth,p); closeAuth(); }
+  catch(e){ document.getElementById('authErr').textContent=friendlyAuthError(e); }
+  finally{ spin(false); }
+}
+function friendlyAuthError(e){
+  const c=(e&&e.code)||'';
+  if(c.includes('invalid-credential')||c.includes('wrong-password')) return 'Email or password is incorrect.';
+  if(c.includes('email-already-in-use')) return 'That email already has an account. Try signing in.';
+  if(c.includes('weak-password')) return 'Password should be at least 6 characters.';
+  if(c.includes('invalid-email')) return 'That doesn\u2019t look like a valid email.';
+  if(c.includes('popup-closed')) return 'Google sign-in was cancelled.';
+  return (e&&e.message)||'Something went wrong. Try again.';
+}
+function signOut(){
+  if(dirty && !confirm('Sign out? Unsaved changes will be lost.')) return;
+  dirty=false;
+  if(MODE==='local'){ localStorage.removeItem('ff_user'); currentUser=null; showLanding(); toast('Signed out'); }
+  else { FB.fbSignOut(FB.auth); }
+}
+function startDemo(){
+  currentUser={uid:'demo',email:'',demo:true};
+  if(MODE==='local') localStorage.setItem('ff_user',JSON.stringify(currentUser));
+  enterApp();toast('Demo mode — forms save to this device');
+}
+</script>
+
+<script>
+/* ============ DATA LAYER — Offline Level 2 (IndexedDB-first + sync queue) ============
+   Source of truth is IndexedDB. Every save writes locally first (so it survives
+   offline + reload), then if online we try to push to Firestore. syncStatus tracks
+   each record: 'synced' | 'pending_sync' | 'sync_failed'. */
+
+const IDB_NAME='fieldforms_db', IDB_STORE='forms', IDB_VER=1;
+let _idb=null;
+function idb(){
+  if(_idb) return Promise.resolve(_idb);
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(IDB_NAME,IDB_VER);
+    r.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains(IDB_STORE)){
+        db.createObjectStore(IDB_STORE,{keyPath:'localId'});
+      }
+    };
+    r.onsuccess=e=>{_idb=e.target.result;res(_idb);};
+    r.onerror=e=>rej(e.target.error);
+  });
+}
+function idbPut(rec){return idb().then(db=>new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).put(rec);tx.oncomplete=()=>res(rec);tx.onerror=e=>rej(e.target.error);}));}
+function idbAll(){return idb().then(db=>new Promise((res,rej)=>{const out=[];const tx=db.transaction(IDB_STORE,'readonly');const cur=tx.objectStore(IDB_STORE).openCursor();cur.onsuccess=e=>{const c=e.target.result;if(c){out.push(c.value);c.continue();}else res(out);};cur.onerror=e=>rej(e.target.error);}));}
+function idbGet(localId){return idb().then(db=>new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readonly');const rq=tx.objectStore(IDB_STORE).get(localId);rq.onsuccess=()=>res(rq.result||null);rq.onerror=e=>rej(e.target.error);}));}
+function idbDelete(localId){return idb().then(db=>new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).delete(localId);tx.oncomplete=()=>res();tx.onerror=e=>rej(e.target.error);}));}
+
+function nowOnline(){ return navigator.onLine; }
+function newLocalId(){ return 'local_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); }
+
+/* Save: always local first, then try cloud if online. */
+async function dbSaveForm(record){
+  if(!record.localId) record.localId = record.localId || newLocalId();
+  record.uid = currentUser.uid;
+  record.updatedAt = Date.now();
+  if(!record.createdAt) record.createdAt = Date.now();
+  // attempt cloud push if online + live
+  let synced=false;
+  if(MODE==='live' && nowOnline()){
+    try{
+      const fid = record.id || FB.doc(FB.collection(FB.db,'forms')).id;
+      record.id = fid;
+      const cloudRec = Object.assign({}, record); delete cloudRec.syncStatus; delete cloudRec.localId;
+      cloudRec.localId = record.localId; // keep a link back
+      await FB.setDoc(FB.doc(FB.db,'forms',fid), cloudRec);
+      synced=true;
+    }catch(e){ console.warn('cloud push failed, queued', e); synced=false; }
+  }
+  record.syncStatus = synced ? 'synced' : (MODE==='live' ? 'pending_sync' : 'synced');
+  await idbPut(record);
+  return record.localId;
+}
+
+/* Merge local IndexedDB records with any cloud records not yet local. */
+async function dbGetForms(){
+  const local = await idbAll();
+  const byLocalId = {};
+  local.forEach(f=>{ byLocalId[f.localId]=f; });
+  if(MODE==='live' && nowOnline()){
+    try{
+      const q=FB.query(FB.collection(FB.db,'forms'),FB.where('uid','==',currentUser.uid));
+      const snap=await FB.getDocs(q);
+      snap.forEach(d=>{
+        const c=d.data();
+        const lid=c.localId||('cloud_'+c.id);
+        if(!byLocalId[lid]){
+          c.localId=lid; c.syncStatus='synced';
+          byLocalId[lid]=c;
+          idbPut(c);  // cache cloud record locally for offline use
+        }
+      });
+    }catch(e){ console.warn('cloud fetch failed, showing local only', e); }
+  }
+  return Object.values(byLocalId).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+}
+async function dbGetForm(localId){
+  const f=await idbGet(localId);
+  if(f) return f;
+  // fallback: maybe it's a cloud id
+  if(MODE==='live' && nowOnline()){
+    try{const d=await FB.getDoc(FB.doc(FB.db,'forms',localId));if(d.exists())return d.data();}catch(e){}
+  }
+  return null;
+}
+async function dbDeleteForm(localId){
+  const f=await idbGet(localId);
+  await idbDelete(localId);
+  if(f && f.id && MODE==='live' && nowOnline()){
+    try{ await FB.deleteDoc(FB.doc(FB.db,'forms',f.id)); }catch(e){ console.warn('cloud delete failed',e); }
+  }
+}
+
+/* ---------- SYNC QUEUE ---------- */
+async function syncPending(){
+  if(MODE!=='live' || !nowOnline()) return;
+  const all=await idbAll();
+  const pending=all.filter(f=>f.syncStatus==='pending_sync' || f.syncStatus==='sync_failed');
+  if(!pending.length) return;
+  let ok=0;
+  for(const rec of pending){
+    try{
+      const fid = rec.id || FB.doc(FB.collection(FB.db,'forms')).id;
+      rec.id = fid;
+      const cloudRec = Object.assign({}, rec); delete cloudRec.syncStatus;
+      await FB.setDoc(FB.doc(FB.db,'forms',fid), cloudRec);  // overwrite cloud with latest local (simple conflict rule)
+      rec.syncStatus='synced';
+      await idbPut(rec);
+      ok++;
+    }catch(e){
+      console.warn('sync failed for',rec.localId,e);
+      rec.syncStatus='sync_failed';
+      await idbPut(rec);
+    }
+  }
+  if(ok>0){
+    toast('Offline drafts synced');
+    updateNetBadge();
+    if(document.getElementById('dashView') && !document.getElementById('dashView').classList.contains('hidden')) loadForms();
+  }
+}
+
+// Option A: photos stored INLINE as compressed data URLs.
+async function dbStorePhoto(formId,name,dataUrl){ return dataUrl || null; }
+
+/* ============ DASHBOARD RENDER ============ */
+function setTab(t){currentTab=t;document.querySelectorAll('#dashTabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));renderList();}
+let _cache=[];
+function normStatus(s){
+  s=(s||'').toString().trim().toLowerCase();
+  if(s==='completed') return 'completed';
+  if(s==='pdf_generated'||s==='pdf generated'||s==='pdfgenerated') return 'pdf_generated';
+  return 'draft'; // default for blank/legacy/unknown
+}
+async function loadForms(){
+  spin(true);
+  try{
+    _cache=await dbGetForms();
+    _cache.forEach(f=>{ f.status=normStatus(f.status); }); // normalize so tabs always match
+    renderList();
+  }
+  catch(e){ toast('Could not load forms'); console.error(e); _cache=[]; renderList(); }
+  finally{ spin(false); }
+}
+function renderList(){
+  const host=document.getElementById('formList');
+  let items=_cache.slice();
+  if(currentTab!=='all') items=items.filter(f=>normStatus(f.status)===currentTab);
+  let html='<div class="cards">';
+  if(items.length===0){
+    const tabName={draft:'draft',completed:'completed',pdf_generated:'PDF-generated'}[currentTab]||'';
+    const msg = currentTab==='all'
+      ? 'No forms yet. Tap “+ Create New Form” to start one.'
+      : 'No '+tabName+' forms yet.';
+    html+='</div><div class="empty-state"><div class="big">📋</div>'+msg+'</div>';
+    host.innerHTML=html;return;
+  }
+  items.forEach(f=>{
+    const st=normStatus(f.status);
+    const stLabel={draft:'Draft',completed:'Completed',pdf_generated:'PDF Generated'}[st]||st;
+    const dt=f.startDate||(f.updatedAt?new Date(f.updatedAt).toISOString().slice(0,10):'');
+    const typeLabel=f.formTypeLabel||(FORM_TYPES[f.formType]&&FORM_TYPES[f.formType].label)||'ATC-11 Pressure Test';
+    const openLabel = st==='draft' ? 'Continue' : (st==='completed'||st==='pdf_generated' ? 'View / Edit' : 'Open');
+    const sync=f.syncStatus||'synced';
+    const syncMap={synced:['Synced','sync-ok'],pending_sync:['Pending Sync','sync-pending'],sync_failed:['Sync Failed','sync-fail']};
+    const localOnly = (MODE!=='live');
+    const syncLabel = localOnly ? ['Saved on Device','sync-local'] : (syncMap[sync]||syncMap.synced);
+    const lid=esc(f.localId||f.id);
+    html+=`<div class="fcard">
+      <div class="pn">${esc(f.projectName)||'(Untitled project)'}</div>
+      <div class="meta">
+        <span><b>Type:</b> ${esc(typeLabel)}</span>
+        <span><b>Subcontractor:</b> ${esc(f.subcontractor)||'—'}</span>
+        <span><b>Location:</b> ${esc(f.location)||'—'}</span>
+        <span><b>Date:</b> ${esc(dt)||'—'}</span>
+      </div>
+      <div class="tagrow"><span class="status ${st}">${stLabel}</span><span class="sync-badge ${syncLabel[1]}">${syncLabel[0]}</span></div>
+      <div class="acts">
+        <button class="btn btn-sec btn-sm" onclick="openForm('${lid}')">${openLabel}</button>
+        <button class="btn btn-sec btn-sm" onclick="regenPDF('${lid}')">PDF</button>
+        <button class="btn btn-sec btn-sm" onclick="sharePDF('${lid}')">Share</button>
+        <button class="btn btn-sec btn-sm" onclick="removeForm('${lid}')" style="color:var(--bad)">Delete</button>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  host.innerHTML=html;
+  document.getElementById('dashSubline').textContent=`${_cache.length} form${_cache.length===1?'':'s'} · ${MODE==='live'?'synced across your devices':'saved on this device'}`;
+}
+async function removeForm(id){
+  if(!confirm('Delete this form permanently?'))return;
+  spin(true);try{await dbDeleteForm(id);await loadForms();toast('Form deleted');}catch(e){toast('Delete failed');}finally{spin(false);}
+}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+
+<script>
+/* ============ FORM: new / open / collect / populate ============ */
+const FIELDS=['projectName','subcontractor','system','location','drawingRef','pipeMaterial',
+  'workingPressure','testPressure','duration','startDate','startTime','startReading',
+  'endDate','endTime','endReading','pressureDrop','remarks',
+  'subName','subCompany','subDate','mainName','mainCompany','mainDate','clientName','clientCompany','clientDate'];
+
+function resetForm(){
+  FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)el.value=(id==='mainCompany'?'SHIMIZU North America':'');});
+  state.result='';state.reinspect='';state.nextwork='';state.startPhoto=null;state.endPhoto=null;state.extras=[];state.status='draft';
+  state.formType='atc11_pressure_test';state.createdAt=null;state.completedAt=null;state.editHistory=[];state.cloudId=null;
+  document.querySelectorAll('#resultSeg button,.yn button').forEach(b=>b.classList.remove('on'));
+  document.getElementById('startPhotoPreview').innerHTML='';
+  document.getElementById('endPhotoPreview').innerHTML='';
+  document.getElementById('extraPhotoPreview').innerHTML='';
+  clearPads();
+}
+function newForm(){
+  if(dirty && !confirm('Start a new form? Unsaved changes will be lost.'))return;
+  resetForm();currentFormId=null;dirty=false;
+  // auto-fill today's date for start
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('startDate').value=today;
+  document.getElementById('formHeading').textContent='New Pressure Test';
+  updateFinishedUI();
+  showFormView();initPads();
+}
+
+/* show/hide the "editing a finished form" warning + edit-history panel */
+function fmtStamp(ts){ if(!ts) return ''; const d=new Date(ts); return d.toLocaleString(); }
+function updateFinishedUI(){
+  const finished = state.status==='completed' || state.status==='pdf_generated';
+  const warn=document.getElementById('editWarning');
+  const hist=document.getElementById('editHistory');
+  if(finished){
+    warn.classList.remove('hidden');
+    const lbl = state.status==='completed' ? 'This form is marked Completed.' : 'This form is marked PDF Generated.';
+    document.getElementById('editWarningStatus').textContent=lbl;
+  } else {
+    warn.classList.add('hidden');
+  }
+  // edit history (show whenever there are entries)
+  const list=document.getElementById('editHistoryList');
+  if(state.editHistory && state.editHistory.length){
+    hist.classList.remove('hidden');
+    list.innerHTML=state.editHistory.slice().reverse().map(e=>
+      `<li><b>${esc(fmtStamp(e.at))}</b> — ${esc(e.action)}</li>`).join('');
+  } else {
+    hist.classList.add('hidden');
+    list.innerHTML='';
+  }
+}
+function addHistory(action){
+  if(!Array.isArray(state.editHistory)) state.editHistory=[];
+  state.editHistory.push({ at:Date.now(), action });
+}
+async function openForm(id){
+  spin(true);
+  try{
+    const f=await dbGetForm(id);
+    if(!f){toast('Form not found');return;}
+    resetForm();
+    FIELDS.forEach(k=>{const el=document.getElementById(k);if(el&&f[k]!=null)el.value=f[k];});
+    state.result=f.result||'';state.reinspect=f.reinspect||'';state.nextwork=f.nextwork||'';
+    state.startPhoto=f.startPhoto||null;state.endPhoto=f.endPhoto||null;state.extras=f.extras||[];
+    state.status=f.status||'draft';
+    state.formType=f.formType||'atc11_pressure_test';
+    state.createdAt=f.createdAt||null;
+    state.completedAt=f.completedAt||null;
+    state.editHistory=Array.isArray(f.editHistory)?f.editHistory:[];
+    state.cloudId=f.id||null;
+    // restore segment buttons
+    document.querySelectorAll('#resultSeg button').forEach(b=>b.classList.toggle('on',b.dataset.val===state.result));
+    document.querySelectorAll('#reinspectYN button').forEach(b=>b.classList.toggle('on',b.dataset.val===state.reinspect));
+    document.querySelectorAll('#nextworkYN button').forEach(b=>b.classList.toggle('on',b.dataset.val===state.nextwork));
+    if(state.startPhoto)document.getElementById('startPhotoPreview').innerHTML='<img src="'+state.startPhoto+'">';
+    if(state.endPhoto)document.getElementById('endPhotoPreview').innerHTML='<img src="'+state.endPhoto+'">';
+    renderExtras();
+    currentFormId=f.localId||id;dirty=false;
+    const statusNote=state.status==='completed'?' (Completed)':(state.status==='pdf_generated'?' (PDF Generated)':'');
+    document.getElementById('formHeading').textContent=(f.projectName||'Pressure Test')+statusNote;
+    updateFinishedUI();
+    showFormView();initPads();
+    // restore signatures
+    ['subSig','mainSig','clientSig'].forEach(p=>{if(f[p])restorePad(p,f[p]);});
+  }catch(e){console.error(e);toast('Could not open form');}
+  finally{spin(false);}
+}
+function collect(){
+  const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
+  const o={};FIELDS.forEach(k=>o[k]=g(k));
+  o.result=state.result;o.reinspect=state.reinspect;o.nextwork=state.nextwork;
+  o.startPhoto=state.startPhoto;o.endPhoto=state.endPhoto;o.extras=state.extras;
+  o.subSig=padData('subSig');o.mainSig=padData('mainSig');o.clientSig=padData('clientSig');
+  o.status=state.status;
+  // ---- future-ready: every record is tagged with its form type ----
+  o.formType=state.formType||'atc11_pressure_test';
+  o.formTypeLabel=FORM_TYPES[o.formType]?FORM_TYPES[o.formType].label:'ATC-11 Pressure Test';
+  o.createdAt=state.createdAt||Date.now();
+  o.completedAt=state.completedAt||null;
+  o.editHistory=state.editHistory||[];
+  if(currentFormId) o.localId=currentFormId;     // currentFormId now holds the localId
+  if(state.cloudId) o.id=state.cloudId;           // preserve existing Firebase id if any
+  return o;
+}
+['input','change'].forEach(ev=>document.getElementById('formView').addEventListener(ev,()=>{dirty=true;}));
+
+/* ---------- pressure drop + validation ---------- */
+function calcDrop(){
+  const s=parseFloat(document.getElementById('startReading').value);
+  const e=parseFloat(document.getElementById('endReading').value);
+  const out=document.getElementById('pressureDrop');
+  out.value=(!isNaN(s)&&!isNaN(e))?(s-e).toFixed(2)+' psi':'';
+}
+function clearInvalid(el){el.classList.remove('invalid');}
+function validateRequired(){
+  const req=['projectName','subcontractor','location'];
+  let ok=true,first=null;
+  req.forEach(id=>{const el=document.getElementById(id);if(!el.value.trim()){el.classList.add('invalid');ok=false;if(!first)first=el;}else el.classList.remove('invalid');});
+  if(!ok){toast('Fill in the highlighted required fields');if(first)first.scrollIntoView({behavior:'smooth',block:'center'});}
+  return ok;
+}
+
+/* ---------- segmented / yes-no ---------- */
+function pickSeg(btn,key){btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');state[key]=btn.dataset.val;dirty=true;}
+function pickYN(btn,key){btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');state[key]=btn.dataset.val;dirty=true;}
+
+/* ---------- photos ---------- */
+function fileToScaled(file,maxDim,cb){
+  const reader=new FileReader();
+  reader.onload=e=>{const img=new Image();img.onload=()=>{
+    let{width:w,height:h}=img;const scale=Math.min(1,maxDim/Math.max(w,h));
+    w=Math.round(w*scale);h=Math.round(h*scale);
+    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+    cb(c.toDataURL('image/jpeg',0.7));};img.src=e.target.result;};
+  reader.readAsDataURL(file);
+}
+function loadPhoto(input,which){if(!input.files[0])return;fileToScaled(input.files[0],1000,d=>{state[which+'Photo']=d;document.getElementById(which+'PhotoPreview').innerHTML='<img src="'+d+'">';dirty=true;toast((which==='start'?'Start':'End')+' photo added');});}
+function loadExtra(input){[...input.files].forEach(f=>fileToScaled(f,1000,d=>{state.extras.push(d);renderExtras();dirty=true;}));toast('Photo added');}
+function renderExtras(){const wrap=document.getElementById('extraPhotoPreview');wrap.innerHTML='';state.extras.forEach((d,i)=>{const div=document.createElement('div');div.style.position='relative';div.innerHTML='<img src="'+d+'" style="height:70px;border-radius:6px;display:block;">'+'<span onclick="removeExtra('+i+')" style="position:absolute;top:-7px;right:-7px;background:#b23b2e;color:#fff;width:22px;height:22px;border-radius:50%;font-size:14px;line-height:22px;text-align:center;cursor:pointer;font-weight:700;">×</span>';wrap.appendChild(div);});}
+function removeExtra(i){state.extras.splice(i,1);renderExtras();dirty=true;}
+
+/* ---------- signature pads ---------- */
+const pads={};
+function initPads(){
+  document.querySelectorAll('canvas.sig').forEach(cv=>{
+    if(pads[cv.dataset.pad]&&pads[cv.dataset.pad].init)return;
+    const ratio=window.devicePixelRatio||1;const rect=cv.getBoundingClientRect();
+    cv.width=rect.width*ratio;cv.height=rect.height*ratio;
+    const ctx=cv.getContext('2d');ctx.scale(ratio,ratio);
+    ctx.lineWidth=2.2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#13202e';
+    pads[cv.dataset.pad]={cv,ctx,drawing:false,empty:true,init:true};
+    const pos=e=>{const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};};
+    const start=e=>{e.preventDefault();const p=pads[cv.dataset.pad];p.drawing=true;p.empty=false;const c=pos(e);ctx.beginPath();ctx.moveTo(c.x,c.y);};
+    const move=e=>{const p=pads[cv.dataset.pad];if(!p.drawing)return;e.preventDefault();const c=pos(e);ctx.lineTo(c.x,c.y);ctx.stroke();dirty=true;};
+    const end=()=>{pads[cv.dataset.pad].drawing=false;};
+    cv.addEventListener('mousedown',start);cv.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
+    cv.addEventListener('touchstart',start,{passive:false});cv.addEventListener('touchmove',move,{passive:false});cv.addEventListener('touchend',end);
+  });
+  document.querySelectorAll('[data-clear]').forEach(el=>{el.onclick=()=>{const p=pads[el.dataset.clear];if(p){p.ctx.clearRect(0,0,p.cv.width,p.cv.height);p.empty=true;dirty=true;}};});
+}
+function clearPads(){Object.values(pads).forEach(p=>{if(p&&p.ctx){p.ctx.clearRect(0,0,p.cv.width,p.cv.height);p.empty=true;}});}
+function padData(name){const p=pads[name];return p&&!p.empty?p.cv.toDataURL('image/png'):null;}
+function restorePad(name,dataUrl){const p=pads[name];if(!p)return;const img=new Image();img.onload=()=>{const r=window.devicePixelRatio||1;p.ctx.drawImage(img,0,0,p.cv.width/r,p.cv.height/r);p.empty=false;};img.src=dataUrl;}
+
+/* ---------- save draft / complete ---------- */
+async function persist(statusVal, historyAction){
+  // Record an edit-history entry when modifying a form that was ALREADY finished.
+  const wasFinished = (state.status==='completed' || state.status==='pdf_generated');
+  state.status=statusVal;
+  if(statusVal==='completed' && !state.completedAt) state.completedAt=Date.now();
+  if(historyAction){ addHistory(historyAction); }
+  else if(wasFinished){ addHistory('Saved changes'); }
+  const rec=collect();
+  spin(true);
+  try{
+    // photos stored inline (Option A): warn if the record is too big to sync to Firestore (~1MB)
+    const approxBytes=JSON.stringify(rec).length;
+    const tooBig = approxBytes > 950000;
+    if(tooBig && MODE==='live'){
+      // Don't lose the draft — save locally, warn, mark for attention
+      rec.syncStatus='sync_failed';
+      await idbPut(Object.assign(rec,{localId:rec.localId||(currentFormId||newLocalId()),uid:currentUser.uid,updatedAt:Date.now()}));
+      currentFormId=rec.localId;dirty=false;
+      toast('Saved on device. Photos too large to sync (over ~1MB) — reduce photos before syncing.');
+      updateFinishedUI();updateNetBadge();
+      return true;
+    }
+    const id=await dbSaveForm(rec);
+    currentFormId=id;dirty=false;
+    if(rec.id) state.cloudId=rec.id;
+    let msg={draft:'Draft saved',completed:'Form marked Complete',pdf_generated:'Saved'}[statusVal]||'Saved';
+    if(MODE==='live' && !nowOnline()) msg+=' (offline — will sync later)';
+    toast(msg);
+    updateFinishedUI();updateNetBadge();
+    return true;
+  }catch(e){console.error(e);toast('Save failed — '+(e.message||'try again'));return false;}
+  finally{spin(false);}
+}
+async function saveDraft(){
+  // saving a draft on an already-finished form is itself an edit worth logging
+  const wasFinished=(state.status==='completed'||state.status==='pdf_generated');
+  if(wasFinished){ await persist(state.status,'Saved changes'); }
+  else { await persist('draft'); }
+}
+async function markComplete(){
+  if(!validateRequired())return;
+  const wasFinished=(state.status==='completed'||state.status==='pdf_generated');
+  await persist('completed', wasFinished ? 'Saved changes (re-confirmed Complete)' : 'Marked Complete');
+}
+async function shareCurrent(){
+  if(!validateRequired())return;
+  const wasFinished=(state.status==='completed'||state.status==='pdf_generated');
+  await persist('pdf_generated', wasFinished ? 'Edited & re-shared PDF' : 'Generated & shared PDF');
+  await buildPDF(collectForPDF(),'share');
+}
+async function completeAndPDF(){
+  if(!validateRequired())return;
+  const wasFinished=(state.status==='completed'||state.status==='pdf_generated');
+  // persist final status (and history) BEFORE generating — a mobile download can halt JS
+  const ok=await persist('pdf_generated', wasFinished ? 'Edited & regenerated PDF' : 'Generated PDF');
+  if(ok){
+    await buildPDF(collectForPDF(),'save');
+    dirty=false;
+    setTimeout(()=>{ showDash(); }, 400);
+  }
+}
+async function regenPDF(id){
+  spin(true);
+  try{const f=await dbGetForm(id);if(!f){toast('Not found');return;}await buildPDF(f,'save');await markPdfGeneratedFor(f);}
+  catch(e){toast('Could not generate PDF');}
+  finally{spin(false);}
+}
+async function sharePDF(id){
+  spin(true);
+  try{const f=await dbGetForm(id);if(!f){toast('Not found');return;}await buildPDF(f,'share');await markPdfGeneratedFor(f);}
+  catch(e){console.error(e);toast('Could not share PDF');}
+  finally{spin(false);}
+}
+async function markPdfGeneratedFor(f){
+  const s=(f.status||'draft');
+  if(s==='draft') return;            // don't silently complete a draft from the dashboard
+  if(s==='pdf_generated') return;
+  f.status='pdf_generated';
+  if(!Array.isArray(f.editHistory)) f.editHistory=[];
+  f.editHistory.push({ at:Date.now(), action:'Generated PDF from dashboard' });
+  try{ await dbSaveForm(f); await loadForms(); }catch(e){}
+}
+function collectForPDF(){return collect();}
+</script>
+
+<script>
+/* ============ PDF GENERATION (corrected ATC-11 layout) ============ */
+async function urlToDataUrl(u){
+  if(!u) return null;
+  if(u.startsWith('data:')) return u;
+  try{const r=await fetch(u);const b=await r.blob();return await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(b);});}
+  catch(e){return null;}
+}
+async function buildPDF(d,action){
+  action=action||'save';
+  spin(true);
+  try{
+    const startImg=await urlToDataUrl(d.startPhoto);
+    const endImg=await urlToDataUrl(d.endPhoto);
+    const doc=renderPDF(d,startImg,endImg);
+    const fname=('PressureTest_'+(d.projectName||'Form')+'_'+(d.startDate||'')).replace(/[^a-z0-9_\-]/gi,'_')+'.pdf';
+    if(action==='save'){
+      doc.save(fname);
+      toast('PDF generated');
+    } else if(action==='share'){
+      await sharePdfDoc(doc,fname,d);
+    }
+  }catch(e){console.error(e);toast('PDF error');}
+  finally{spin(false);}
+}
+/* Share via the native share sheet (iPhone/iPad: AirDrop, Mail, Messages...).
+   Falls back to an email draft with the PDF downloaded alongside. */
+async function sharePdfDoc(doc,fname,d){
+  const blob=doc.output('blob');
+  const file=new File([blob],fname,{type:'application/pdf'});
+  const subject='Pressure Test — '+(d.projectName||'FieldForms');
+  const body='Attached: ATC-11 Pipe Pressure & Leakage Function Test'
+    +(d.projectName?('\nProject: '+d.projectName):'')
+    +(d.location?('\nLocation: '+d.location):'')
+    +(d.startDate?('\nDate: '+d.startDate):'');
+  // 1) Native share with the actual file (best on iOS/iPadOS)
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file],title:subject,text:body}); return; }
+    catch(e){ if(e&&e.name==='AbortError')return; /* user cancelled */ }
+  }
+  // 2) Fallback: download the PDF, then open an email draft to attach it
+  doc.save(fname);
+  const mailto='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body+'\n\n(Attach the PDF that was just downloaded: '+fname+')');
+  window.location.href=mailto;
+  toast('PDF downloaded — email draft opened');
+}
+function renderPDF(d,startImg,endImg){
+  const { jsPDF }=window.jspdf;
+  const doc=new jsPDF({unit:'pt',format:'letter'});
+  const PW=612, PH=792, M=40, RW=PW-M*2;
+  const black=[0,0,0], dot=[120,120,120];
+  let y=M;
+  const txt=(s,x,yy,opt)=>doc.text(s||'',x,yy,opt);
+  const solidLine=(x1,yy,x2,w)=>{doc.setDrawColor(...black);doc.setLineWidth(w||0.7);doc.setLineDashPattern([],0);doc.line(x1,yy,x2,yy);};
+  const dottedLine=(x1,yy,x2)=>{doc.setDrawColor(...dot);doc.setLineWidth(0.7);doc.setLineDashPattern([1,1.4],0);doc.line(x1,yy,x2,yy);doc.setLineDashPattern([],0);};
+
+  doc.setTextColor(...black);
+  doc.setFont('helvetica','bold');doc.setFontSize(7);txt('SHIMIZU NORTH AMERICA LLC',M,y+2);
+  doc.setFontSize(26);txt('SHMZ',M,y+24);
+  doc.setDrawColor(...black);doc.setLineWidth(1.2);doc.ellipse(M+118,y-2,6,4,'S');
+  doc.setFont('helvetica','normal');doc.setFontSize(9);txt('PROJECT NAME : '+(d.projectName||''),M+150,y+10);
+  y+=30;solidLine(M,y,PW-M,2.4);y+=12;
+  doc.setFontSize(8.5);txt('2100 Riveredge Parkway, Suite 1100, Atlanta, GA 30328',M,y);y+=10;
+
+  const boxTop=y, boxBottom=PH-64;
+  doc.setDrawColor(...black);doc.setLineWidth(1);doc.setLineDashPattern([],0);doc.rect(M,boxTop,RW,boxBottom-boxTop);
+  const IN=M+14, INR=PW-M-14, IW=INR-IN;
+  y=boxTop+24;
+  doc.setFont('helvetica','bold');doc.setFontSize(13);txt('PIPE PRESSURE AND LEAKAGE FUNCTION TEST',PW/2,y,{align:'center'});y+=22;
+
+  const valX=IN+120;
+  const identRow=(label,val)=>{doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(...black);txt(label,IN,y);txt(val||'',valX,y);solidLine(valX,y+2,INR,0.7);y+=18;};
+  identRow('SUBCONTRACTOR:',d.subcontractor);identRow('SYSTEM (SERVICE) :',d.system);identRow('LOCATION :',d.location);identRow('DRAWING REF :',d.drawingRef);identRow('PIPE MATERIAL:',d.pipeMaterial);
+  y+=4;solidLine(IN,y,INR,0.7);y+=18;
+
+  doc.setFont('helvetica','normal');doc.setFontSize(9.5);txt('SPECIFICATION',IN,y);
+  doc.setFont('helvetica','bold');txt('WORKING PRESSURE',IN+150,y);y+=20;
+  const wp1=IN+150,wp2=IN+300;doc.setFont('helvetica','normal');txt((d.workingPressure||''),wp1+4,y-2);solidLine(wp1,y,wp2,0.7);doc.setFont('helvetica','bold');txt('psi',wp2-22,y-2);y+=22;
+  doc.setFont('helvetica','normal');txt('TEST CONDITION',IN,y);doc.setFont('helvetica','bold');txt('TEST PRESSURE',IN+150,y);txt('DURATION TEST TIME',IN+330,y);y+=20;
+  doc.setFont('helvetica','normal');txt((d.testPressure||''),IN+154,y-2);solidLine(IN+150,y,IN+280,0.7);doc.setFont('helvetica','bold');txt('psi',IN+280-22,y-2);
+  doc.setFont('helvetica','normal');txt((d.duration||''),IN+334,y-2);solidLine(IN+330,y,INR,0.7);doc.setFont('helvetica','bold');txt('hours',INR-30,y-2);y+=18;
+  solidLine(IN,y,INR,0.7);y+=18;
+
+  const colL=IN, colR=IN+IW/2+10, labW=58;
+  doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(...black);
+  txt('START',colL,y);txt('COMPLETE',colR,y);y+=15;
+  const rrow=(label,lv,rv)=>{doc.setFont('helvetica','normal');doc.setFontSize(9.5);txt(label,colL,y);txt(label,colR,y);txt(lv||'',colL+labW,y);txt(rv||'',colR+labW,y);dottedLine(colL+labW,y+2,colL+IW/2-10);dottedLine(colR+labW,y+2,INR);y+=15;};
+  rrow('Date',d.startDate,d.endDate);rrow('Time',d.startTime,d.endTime);
+  doc.setFont('helvetica','normal');txt('Pressure',colL,y);txt('Pressure',colR,y);txt((d.startReading||''),colL+labW,y);txt((d.endReading||''),colR+labW,y);dottedLine(colL+labW,y+2,colL+IW/2-10);dottedLine(colR+labW,y+2,INR);txt('Reading',colL,y+11);txt('Reading',colR,y+11);y+=26;
+  txt('Pressure',colR,y);txt(d.pressureDrop||'',colR+labW,y);dottedLine(colR+labW,y+2,INR);txt('Drop',colR,y+11);y+=22;
+
+  txt('Photo',colL,y);txt('Photo',colR,y);y+=6;
+  const boxW=IW/2-20, boxH=84;
+  const pbox=(img,x,yy)=>{doc.setDrawColor(...black);doc.setLineWidth(1);doc.setLineDashPattern([],0);doc.rect(x,yy,boxW,boxH);if(img){try{const p=doc.getImageProperties(img);const r=Math.min(boxW/p.width,boxH/p.height);const w=p.width*r,h=p.height*r;doc.addImage(img,'JPEG',x+(boxW-w)/2,yy+(boxH-h)/2,w,h);}catch(e){}}};
+  pbox(startImg,colL,y);pbox(endImg,colR,y);y+=boxH+12;
+  solidLine(IN,y,INR,0.7);y+=16;
+
+  doc.setFont('helvetica','normal');doc.setFontSize(9.5);txt('INSPECTION RESULT',IN,y);y+=18;
+  const cbox=(x,yy,ch)=>{doc.setDrawColor(...black);doc.setLineWidth(1);doc.setLineDashPattern([],0);doc.rect(x,yy-9,22,12);if(ch){doc.setFont('helvetica','bold');doc.setFontSize(11);txt('X',x+7,yy);doc.setFont('helvetica','normal');doc.setFontSize(9.5);}};
+  cbox(IN+8,y,d.result==='Approved');txt('Approved',IN+38,y);
+  cbox(IN+190,y,d.result==='Approved with Comment');txt('Approved with Comment',IN+220,y);
+  cbox(IN+400,y,d.result==='Not Approved');txt('Not Approved',IN+430,y);y+=22;
+  txt('Re-inspection Required',IN,y);cbox(IN+200,y,d.reinspect==='Yes');txt('Yes',IN+228,y);cbox(IN+300,y,d.reinspect==='No');txt('No',IN+328,y);y+=22;
+  txt('Acceptable for Next Work',IN,y);cbox(IN+200,y,d.nextwork==='Yes');txt('Yes',IN+228,y);cbox(IN+300,y,d.nextwork==='No');txt('No',IN+328,y);y+=22;
+  doc.setFont('helvetica','bold');txt('REMARK / NON-CONFORMANCE',IN,y);y+=8;
+  doc.setFont('helvetica','normal');const rl=doc.splitTextToSize(d.remarks||'',IW-8);txt(rl,IN+2,y+12);
+  const remBottom=y+Math.max(24,rl.length*12+8);solidLine(IN,remBottom,INR,0.7);y=remBottom+16;
+
+  const sigBandTop=boxBottom-108;y=Math.max(y,sigBandTop);
+  const sigColW=IW/3;
+  const sigs=[['SUB CONTRACTOR',d.subName,d.subCompany,d.subDate,d.subSig],['MAIN CONTRACTOR',d.mainName,d.mainCompany,d.mainDate,d.mainSig],["CLIENT/CLIENT'S REP",d.clientName,d.clientCompany,d.clientDate,d.clientSig]];
+  const sigTop=y;doc.setDrawColor(...black);doc.setLineWidth(0.7);doc.setLineDashPattern([],0);
+  doc.line(IN+sigColW,sigTop-6,IN+sigColW,boxBottom-8);doc.line(IN+sigColW*2,sigTop-6,IN+sigColW*2,boxBottom-8);
+  sigs.forEach((s,i)=>{const x=IN+i*sigColW+6,w=sigColW-12;
+    doc.setFont('helvetica','bold');doc.setFontSize(9);txt(s[0],x,y);
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);txt('Witness',x,y+12);
+    if(s[4]){try{doc.addImage(s[4],'PNG',x,y+16,w,26);}catch(e){}}
+    let yy=y+46;doc.setFontSize(8.5);
+    txt('Name:',x,yy);dottedLine(x+30,yy+2,x+w);txt(s[1]||'',x+34,yy);yy+=15;
+    txt('Company:',x,yy);txt(s[2]||'',x+44,yy);dottedLine(x+44,yy+2,x+w);yy+=15;
+    txt('Date:',x,yy);dottedLine(x+28,yy+2,x+w);txt(s[3]||'',x+32,yy);
+  });
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+  txt('REV.0',M,PH-22);txt('FORM NO.: ATC-11',PW/2,PH-22,{align:'center'});txt('ISSUED DATE: 10-01-07',PW-M,PH-22,{align:'right'});
+
+  return doc; // caller (buildPDF) decides whether to save / share
+}
+</script>
+</body>
+</html>
