@@ -269,7 +269,10 @@ canvas.sig{width:100%;height:120px;display:block;touch-action:none;}
         <h1>Your Forms</h1>
         <p id="dashSubline">Create, continue, and review inspection forms.</p>
       </div>
-      <button class="btn btn-primary" onclick="newForm()">+ Create New Form</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sec" id="syncNowBtn" onclick="manualSync()">Sync now</button>
+        <button class="btn btn-primary" onclick="newForm()">+ Create New Form</button>
+      </div>
     </div>
     <div class="tabs" id="dashTabs">
       <button class="on" data-tab="all" onclick="setTab('all')">All</button>
@@ -503,6 +506,23 @@ window.dispatchEvent(new Event('fb-ready'));
    ======================================================================= */
 
 let FB=null, MODE='local', currentUser=null, currentFormId=null, dirty=false, currentTab='all';
+let authReady=false;
+
+/* Make sure we have a live Firebase auth session before trying to write.
+   On reconnect the anonymous token may need re-establishing; without this,
+   writes fail silently and drafts never actually upload. */
+async function ensureAuth(){
+  if(MODE!=='live') return false;
+  if(authReady && FB.auth && FB.auth.currentUser) return true;
+  if(!nowOnline()) return false;
+  try{
+    await FB.signInAnonymously(FB.auth);   // no-op if already signed in
+    // give onAuthStateChanged a moment to set currentUser
+    for(let i=0;i<20 && !(FB.auth && FB.auth.currentUser); i++){ await new Promise(r=>setTimeout(r,100)); }
+    authReady = !!(FB.auth && FB.auth.currentUser);
+    return authReady;
+  }catch(e){ console.warn('ensureAuth failed',e); return false; }
+}
 
 /* DEMO_AUTH: when true, the Sign In button enters the app immediately with no
    password. Flip to false later to require real authentication — the existing
@@ -573,8 +593,11 @@ function boot(){
         } else {
           currentUser={uid:u.uid,email:u.email};
         }
+        authReady=true;
+        // a fresh/confirmed session is the right moment to flush the queue
+        syncPending().then(updateNetBadge);
         enterApp();
-      } else { currentUser=null; showLanding(); }
+      } else { currentUser=null; authReady=false; showLanding(); }
     });
   } else {
     const saved=localStorage.getItem('ff_user');
@@ -797,12 +820,15 @@ async function dbSaveForm(record){
   let synced=false;
   if(MODE==='live' && nowOnline()){
     try{
-      const fid = record.id || FB.doc(FB.collection(FB.db,'forms')).id;
-      record.id = fid;
-      const cloudRec = Object.assign({}, record); delete cloudRec.syncStatus; delete cloudRec.localId;
-      cloudRec.localId = record.localId; // keep a link back
-      await FB.setDoc(FB.doc(FB.db,'forms',fid), cloudRec);
-      synced=true;
+      const ready = await ensureAuth();
+      if(ready){
+        const fid = record.id || FB.doc(FB.collection(FB.db,'forms')).id;
+        record.id = fid;
+        record.uid = currentUser.uid;
+        const cloudRec = Object.assign({}, record); delete cloudRec.syncStatus;
+        await FB.setDoc(FB.doc(FB.db,'forms',fid), cloudRec);
+        synced=true;
+      }
     }catch(e){ console.warn('cloud push failed, queued', e); synced=false; }
   }
   record.syncStatus = synced ? 'synced' : (MODE==='live' ? 'pending_sync' : 'synced');
@@ -852,6 +878,9 @@ async function dbDeleteForm(localId){
 /* ---------- SYNC QUEUE ---------- */
 async function syncPending(){
   if(MODE!=='live' || !nowOnline()) return;
+  // CRITICAL: ensure a live auth session, or writes fail silently
+  const ready = await ensureAuth();
+  if(!ready){ console.warn('sync skipped — auth not ready'); return; }
   const all=await idbAll();
   const pending=all.filter(f=>f.syncStatus==='pending_sync' || f.syncStatus==='sync_failed');
   if(!pending.length) return;
@@ -860,11 +889,20 @@ async function syncPending(){
     try{
       const fid = rec.id || FB.doc(FB.collection(FB.db,'forms')).id;
       rec.id = fid;
+      rec.uid = currentUser.uid;   // make sure it writes under the shared workspace
       const cloudRec = Object.assign({}, rec); delete cloudRec.syncStatus;
-      await FB.setDoc(FB.doc(FB.db,'forms',fid), cloudRec);  // overwrite cloud with latest local (simple conflict rule)
-      rec.syncStatus='synced';
-      await idbPut(rec);
-      ok++;
+      const docRef = FB.doc(FB.db,'forms',fid);   // one ref, reused for write + verify
+      await FB.setDoc(docRef, cloudRec);  // overwrite cloud with latest local (simple conflict rule)
+      // verify the write actually landed before marking synced
+      const check = await FB.getDoc(docRef);
+      if(check && check.exists()){
+        rec.syncStatus='synced';
+        await idbPut(rec);
+        ok++;
+      } else {
+        rec.syncStatus='sync_failed';
+        await idbPut(rec);
+      }
     }catch(e){
       console.warn('sync failed for',rec.localId,e);
       rec.syncStatus='sync_failed';
@@ -872,7 +910,7 @@ async function syncPending(){
     }
   }
   if(ok>0){
-    toast('Offline drafts synced');
+    toast('Offline drafts synced ('+ok+')');
     updateNetBadge();
     if(document.getElementById('dashView') && !document.getElementById('dashView').classList.contains('hidden')) loadForms();
   }
@@ -880,6 +918,25 @@ async function syncPending(){
 
 // Option A: photos stored INLINE as compressed data URLs.
 async function dbStorePhoto(formId,name,dataUrl){ return dataUrl || null; }
+
+/* Manual sync button — forces auth + queue flush, with clear feedback. */
+async function manualSync(){
+  if(MODE!=='live'){ toast('Local mode — nothing to sync'); return; }
+  if(!nowOnline()){ toast('Still offline — connect to sync'); return; }
+  spin(true);
+  try{
+    const all=await idbAll();
+    const before=all.filter(f=>f.syncStatus==='pending_sync'||f.syncStatus==='sync_failed').length;
+    await syncPending();
+    const after=(await idbAll()).filter(f=>f.syncStatus==='pending_sync'||f.syncStatus==='sync_failed').length;
+    if(before===0) toast('Everything already synced');
+    else if(after===0) toast('All drafts synced');
+    else toast((before-after)+' synced, '+after+' still pending');
+    await loadForms();
+    updateNetBadge();
+  }catch(e){ console.error(e); toast('Sync error'); }
+  finally{ spin(false); }
+}
 
 /* ============ DASHBOARD RENDER ============ */
 function setTab(t){currentTab=t;document.querySelectorAll('#dashTabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));renderList();}
